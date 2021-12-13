@@ -1,0 +1,35 @@
+version: "3"
+
+services:
+    server:
+        image: nodejs:latest
+        container_name: test-server
+        environment:
+            PORT: 8000
+
+        # This service will be accessible from
+        # both host machine and from nginx proxy
+        ports:
+            - "8000:8000"
+        volumes:
+            - ../test:/var/www/app
+        entrypoint: ["pm2-runtime", "/var/www/app/app.js"]
+    server-2:
+        image: nodejs:latest
+        container_name: test-server-2
+        environment:
+            PORT: 8080
+
+        # This service will be accessible only
+        # from nginx proxy and not from the host
+        # Port binding is not needed if the
+        # service wont be accessible from the host
+        #ports:
+        #    - "8080:8000"
+        volumes:
+            - ../test:/var/www/app
+        entrypoint: ["pm2-runtime", "/var/www/app/app.js"]
+networks:
+  default:
+    external: true
+    name: main-network 

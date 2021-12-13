@@ -1,0 +1,3 @@
+*.swp
+**/certs/*
+!**/certs/README.md 

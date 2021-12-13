@@ -1,0 +1,58 @@
+# Alternative docker-compose file containing
+# all services with relative (for this file location) or
+# absolute paths for their mounts.
+# If used as docker-compose up -> all services will be started
+# Can be used as docker-compose service1 service2 up -> only the desired services 
+# will be started.
+
+version: "3"
+
+services:
+    server:
+        image: nodejs:latest
+        container_name: test-server
+        environment:
+            PORT: 8000
+
+        # This service will be accessible from
+        # both host machine and from nginx proxy
+        ports:
+            - "8000:8000"
+        volumes:
+            - ./test:/var/www/app
+        entrypoint: ["pm2-runtime", "/var/www/app/app.js"]
+    server-2:
+        image: nodejs:latest
+        container_name: test-server-2
+        environment:
+            PORT: 8080
+
+        # This service will be accessible only
+        # from nginx proxy and not from the host
+        # Port binding is not needed if the
+        # service wont be accessible from the host
+        #ports:
+        #    - "8080:8080"
+        volumes:
+            - ./test:/var/www/app
+        entrypoint: ["pm2-runtime", "/var/www/app/app.js"]
+    nginx:
+        image: nginx
+        container_name: nginx
+        ports:
+            - "80:80"
+            - "443:443"
+        volumes:
+            - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+            - ./nginx/certs:/etc/nginx/certs
+        depends_on:
+            - server
+            - server-2
+        networks:
+            default:
+                ipv4_address: 172.1.0.10
+
+networks:
+  default:
+    external: true
+    name: main-network

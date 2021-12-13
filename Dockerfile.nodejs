@@ -1,0 +1,48 @@
+# Arguments
+# CLI overwrite:
+# docker build --build-arg username=john --build-arg password=12345 --build-arg nodeversion=8.10.0 -f </path/to/Dockerfile> -t <image name:tag> .
+
+# Defaults
+ARG os="ubuntu:18.04"
+ARG username="galio"
+ARG password="1"
+ARG nodeversion="16.13.1"
+
+# Install OS
+FROM $os as base
+
+ARG username
+ARG password
+
+RUN rm /bin/sh && ln -s /bin/bash /bin/sh
+
+RUN apt-get update && apt-get install -y \
+curl \
+wget \
+xz-utils \
+sudo \
+iputils-ping \
+openssl
+
+RUN useradd -m -p $(openssl passwd -1 $password) $username
+RUN usermod -aG sudo $username
+
+RUN echo "$username ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/nopassword
+
+USER $username
+WORKDIR /home/$username
+
+# Install node.js
+FROM base as nodejs
+
+ARG nodeversion
+
+RUN cd ~ && wget https://nodejs.org/dist/v$nodeversion/node-v$nodeversion-linux-x64.tar.xz
+RUN tar -xf node-v$nodeversion-linux-x64.tar.xz
+RUN sudo cp -a ~/node-v$nodeversion-linux-x64/. /usr/local
+
+RUN npm install pm2 -g
+RUN npm install nodemon -g
+
+# Default command. Can be overwritten in compose or docker run
+CMD /bin/bash
