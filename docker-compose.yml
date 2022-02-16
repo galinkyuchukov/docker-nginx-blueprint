@@ -9,7 +9,7 @@ version: "3"
 
 services:
     server:
-        image: nodejs:latest
+        image: nodejs:base
         container_name: test-server
         environment:
             PORT: 8000
@@ -22,7 +22,7 @@ services:
             - ./test:/var/www/app
         entrypoint: ["pm2-runtime", "/var/www/app/app.js"]
     server-2:
-        image: nodejs:latest
+        image: nodejs:base
         container_name: test-server-2
         environment:
             PORT: 8080
