@@ -22,6 +22,8 @@ wget \
 xz-utils \
 sudo \
 iputils-ping \
+net-tools \
+dnsutils \
 openssl
 
 RUN useradd -m -p $(openssl passwd -1 $password) $username
